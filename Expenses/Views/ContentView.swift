@@ -32,7 +32,7 @@ struct ContentView: View {
                     }
                 }
             }
-            .navigationTitle("Expenses")
+            .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.large)
             .sheet(isPresented: $isShowingSheet) {
                 AddExpenseSheet()
@@ -46,7 +46,7 @@ struct ContentView: View {
                         Button(action: {
                             isShowingSheet = true
                         }) {
-                            Label("Add Item", systemImage: "plus")
+                            Label("toolbar.addExpense", systemImage: "plus")
                         }
                     }
                 }
@@ -63,15 +63,15 @@ struct ContentView: View {
         ContentUnavailableView(
             label: {
                 Label(
-                    "No Expenses",
+                    "home.noExpenses",
                     systemImage: "list.bullet.rectangle.portrait"
                 )
             },
             description: {
-                Text("Start adding an expense for tracking...")
+                Text("home.start")
             },
             actions: {
-                Button("Add expense") {
+                Button("toolbar.addExpense") {
                     isShowingSheet = true
                 }
             }

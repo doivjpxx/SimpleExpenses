@@ -23,16 +23,16 @@ struct EditExpenseSheet: View {
                 value: $draftValue,
                 timestamp: $draftTimestamp
             )
-            .navigationTitle("Edit Expense")
+            .navigationTitle("sheet.editExpense")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarLeading) {
-                    Button("Cancel") {
+                    Button("toolbar.cancel") {
                         dismiss()
                     }
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button("Update") {
+                    Button("toolbar.update") {
                         expense.title = draftTitle
                         expense.value = draftValue
                         expense.timestamp = draftTimestamp
@@ -48,4 +48,17 @@ struct EditExpenseSheet: View {
             draftTimestamp = expense.timestamp
         }
     }
+}
+
+#Preview {
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(
+        for: Expense.self,
+        configurations: config
+    )
+
+    let sample = Expense(title: "Coffee", value: 45000, timestamp: .now)
+    container.mainContext.insert(sample)
+    return EditExpenseSheet(expense: sample)
+        .modelContainer(container)
 }

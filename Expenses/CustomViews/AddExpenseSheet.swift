@@ -19,16 +19,16 @@ struct AddExpenseSheet: View {
     var body: some View {
         NavigationStack {
             ExpenseFormView(title: $title, value: $value, timestamp: $timestamp)
-                .navigationTitle("Add Expense")
+                .navigationTitle("sheet.addExpense")
                 .navigationBarTitleDisplayMode(.large)
                 .toolbar {
                     ToolbarItemGroup(placement: .topBarLeading) {
-                        Button("Cancel") {
+                        Button("toolbar.cancel") {
                             dismiss()
                         }
                     }
                     ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button("Add") {
+                        Button("toolbar.save") {
                             let expense = Expense(
                                 title: title,
                                 value: value,

@@ -15,10 +15,18 @@ struct ExpenseFormView: View {
     
     var body: some View {
         Form {
-            TextField("Expense name", text: $title)
-            TextField("Value", value: $value, format: .currency(code: currencyCode))
+            TextField("form.expenseName", text: $title)
+            TextField("form.value", value: $value, format: .currency(code: currencyCode))
                 .keyboardType(.decimalPad)
-            DatePicker("Date", selection: $timestamp, displayedComponents: .date)
+            DatePicker("form.date", selection: $timestamp, displayedComponents: .date)
         }
     }
+}
+
+#Preview {
+    ExpenseFormView(
+        title: .constant(""),
+        value: .constant(0.0),
+        timestamp: .constant(Date())
+    )
 }
