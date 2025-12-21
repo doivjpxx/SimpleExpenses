@@ -85,8 +85,13 @@ class ExpenseStatsViewModel {
             }
         }
         
-        // Create chart data points
-        let weekdaySymbols = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
+        // Create chart data points using Calendar symbols
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale.current
+        guard let weekdaySymbols = dateFormatter.veryShortWeekdaySymbols ?? dateFormatter.shortWeekdaySymbols else {
+            return []
+        }
+        
         var result: [ChartDataPoint] = []
         
         for day in 0..<7 {

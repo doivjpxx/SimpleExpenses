@@ -10,13 +10,17 @@ import SwiftData
 
 @Model
 final class Expense {
-    @Attribute(.unique) var title: String
+    var title: String
     var value: Double
     var timestamp: Date
+    var category: String
+    var note: String?
     
-    init(title: String, value: Double, timestamp: Date?) {
+    init(title: String, value: Double, timestamp: Date?, category: String = "Other", note: String? = nil) {
         self.title = title
         self.value = value
         self.timestamp = timestamp ?? Date()
+        self.category = category
+        self.note = note
     }
 }

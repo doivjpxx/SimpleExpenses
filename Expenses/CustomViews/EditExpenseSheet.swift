@@ -14,6 +14,8 @@ struct EditExpenseSheet: View {
     @Bindable var expense: Expense
 
     @State private var viewModel: ExpenseFormViewModel
+    @State private var showingError = false
+    @State private var errorMessage = ""
 
     init(expense: Expense) {
         self.expense = expense
@@ -25,7 +27,9 @@ struct EditExpenseSheet: View {
             ExpenseFormView(
                 title: $viewModel.title,
                 value: $viewModel.value,
-                timestamp: $viewModel.timestamp
+                timestamp: $viewModel.timestamp,
+                category: $viewModel.category,
+                note: $viewModel.note
             )
             .navigationTitle("sheet.editExpense")
             .navigationBarTitleDisplayMode(.large)
@@ -39,9 +43,14 @@ struct EditExpenseSheet: View {
                     Button("toolbar.update") {
                         updateExpense()
                     }
-                    .foregroundStyle(Color(.yellow))
+                    .foregroundStyle(.blue)
                     .disabled(!viewModel.isValid)
                 }
+            }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
             }
         }
     }
@@ -49,10 +58,12 @@ struct EditExpenseSheet: View {
     private func updateExpense() {
         do {
             try viewModel.updateExpense(expense, context: context)
+            HapticManager.shared.notification(type: .success)
             dismiss()
         } catch {
-            // Handle error - could show an alert
-            print("Error updating expense: \(error)")
+            errorMessage = "Error updating expense: \(error.localizedDescription)"
+            showingError = true
+            HapticManager.shared.notification(type: .error)
         }
     }
 }
@@ -64,7 +75,13 @@ struct EditExpenseSheet: View {
         configurations: config
     )
 
-    let sample = Expense(title: "Coffee", value: 45000, timestamp: .now)
+    let sample = Expense(
+        title: "Coffee", 
+        value: 45000, 
+        timestamp: .now,
+        category: "Food",
+        note: "Morning coffee"
+    )
     container.mainContext.insert(sample)
     return EditExpenseSheet(expense: sample)
         .modelContainer(container)

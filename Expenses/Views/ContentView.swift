@@ -10,44 +10,62 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
-    @Query(sort: \Expense.timestamp) var expenses: [Expense]
+    @Query(sort: \Expense.timestamp, order: .reverse) var expenses: [Expense]
 
-    @State private var viewModel: ExpenseListViewModel
-
-    init() {
-        // Provide a temporary model context for the State until the real one is assigned in onAppear.
-        let container = (try? ModelContainer(for: Expense.self))
-            ?? (try! ModelContainer(for: Expense.self, configurations: .init(isStoredInMemoryOnly: true)))
-        let tempContext = ModelContext(container)
-        _viewModel = State(initialValue: ExpenseListViewModel(modelContext: tempContext))
-    }
+    @State private var isShowingAddSheet = false
+    @State private var selectedExpense: Expense?
+    @State private var errorMessage: String?
+    @State private var showingError = false
 
     var body: some View {
         NavigationStack {
             List {
                 ForEach(expenses) { item in
                     ExpenseCellView(expense: item)
+                        .contentShape(Rectangle())
                         .onTapGesture {
-                            viewModel.selectExpense(item)
+                            selectedExpense = item
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                deleteExpense(item)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            Button {
+                                selectedExpense = item
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityHint("Tap to edit, swipe left to delete")
                 }
-                .onDelete { indexSet in
-                    viewModel.deleteExpenses(at: indexSet, from: expenses)
-                }
+                .onDelete(perform: deleteExpenses)
             }
             .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.large)
-            .sheet(isPresented: $viewModel.isShowingAddSheet) {
+            .sheet(isPresented: $isShowingAddSheet) {
                 AddExpenseSheet()
             }
-            .sheet(item: $viewModel.selectedExpense) { expense in
+            .sheet(item: $selectedExpense) { expense in
                 EditExpenseSheet(expense: expense)
+            }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                if let errorMessage {
+                    Text(errorMessage)
+                }
             }
             .toolbar {
                 if !expenses.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
                         Button(action: {
-                            viewModel.showAddSheet()
+                            isShowingAddSheet = true
                         }) {
                             Label("toolbar.addExpense", systemImage: "plus")
                         }
@@ -58,10 +76,6 @@ struct ContentView: View {
                 if expenses.isEmpty {
                     emptyPlaceholder
                 }
-            }
-            .onAppear {
-                // Reinitialize ViewModel with proper context
-                viewModel = ExpenseListViewModel(modelContext: context)
             }
         }
     }
@@ -79,11 +93,29 @@ struct ContentView: View {
             },
             actions: {
                 Button("toolbar.addExpense") {
-                    viewModel.showAddSheet()
+                    isShowingAddSheet = true
                 }
             }
         )
         .offset(y: -60)
+    }
+    
+    // MARK: - Methods
+    
+    private func deleteExpense(_ expense: Expense) {
+        withAnimation {
+            context.delete(expense)
+            HapticManager.shared.impact(style: .medium)
+        }
+    }
+    
+    private func deleteExpenses(at offsets: IndexSet) {
+        withAnimation {
+            for index in offsets {
+                context.delete(expenses[index])
+            }
+            HapticManager.shared.impact(style: .medium)
+        }
     }
 }
 

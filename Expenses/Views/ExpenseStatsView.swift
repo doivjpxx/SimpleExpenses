@@ -39,6 +39,8 @@ struct ExpenseStatsView: View {
                         }
                         .padding(.vertical)
                     }
+                    .animation(.easeInOut, value: viewModel.selectedPeriod)
+                    .animation(.easeInOut, value: viewModel.totalExpenses)
                 }
             }
             .navigationTitle("stats.title")
@@ -72,6 +74,7 @@ struct ExpenseStatsView: View {
             Text(viewModel.formatCurrency(viewModel.totalExpenses))
                 .font(.system(size: 36, weight: .bold))
                 .foregroundStyle(.primary)
+                .contentTransition(.numericText())
             
             Text(viewModel.periodDescription)
                 .font(.caption)
@@ -82,8 +85,11 @@ struct ExpenseStatsView: View {
         .background {
             RoundedRectangle(cornerRadius: 16)
                 .fill(.ultraThinMaterial)
+                .shadow(color: .black.opacity(0.05), radius: 8, y: 4)
         }
         .padding(.horizontal)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Total expenses: \(viewModel.formatCurrency(viewModel.totalExpenses)) for \(viewModel.periodDescription)")
     }
     
     var chartView: some View {

@@ -15,6 +15,8 @@ class ExpenseFormViewModel {
     var title: String = ""
     var value: Double = 0
     var timestamp: Date = Date()
+    var category: String = "Other"
+    var note: String? = nil
     
     // MARK: - Computed Properties
     
@@ -33,6 +35,8 @@ class ExpenseFormViewModel {
         self.title = expense.title
         self.value = expense.value
         self.timestamp = expense.timestamp
+        self.category = expense.category
+        self.note = expense.note
     }
     
     // MARK: - Methods
@@ -45,7 +49,9 @@ class ExpenseFormViewModel {
         let expense = Expense(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
             value: value,
-            timestamp: timestamp
+            timestamp: timestamp,
+            category: category,
+            note: note?.trimmingCharacters(in: .whitespacesAndNewlines)
         )
         
         context.insert(expense)
@@ -60,6 +66,8 @@ class ExpenseFormViewModel {
         expense.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
         expense.value = value
         expense.timestamp = timestamp
+        expense.category = category
+        expense.note = note?.trimmingCharacters(in: .whitespacesAndNewlines)
         
         try context.save()
     }
@@ -68,6 +76,8 @@ class ExpenseFormViewModel {
         title = ""
         value = 0
         timestamp = Date()
+        category = "Other"
+        note = nil
     }
 }
 
