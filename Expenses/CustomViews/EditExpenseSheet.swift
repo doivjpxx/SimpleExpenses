@@ -9,19 +9,23 @@ import SwiftData
 import SwiftUI
 
 struct EditExpenseSheet: View {
+    @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
     @Bindable var expense: Expense
 
-    @State private var draftTitle: String = ""
-    @State private var draftValue: Double = 0
-    @State private var draftTimestamp: Date = .now
+    @State private var viewModel: ExpenseFormViewModel
+
+    init(expense: Expense) {
+        self.expense = expense
+        _viewModel = State(initialValue: ExpenseFormViewModel(expense: expense))
+    }
 
     var body: some View {
         NavigationStack {
             ExpenseFormView(
-                title: $draftTitle,
-                value: $draftValue,
-                timestamp: $draftTimestamp
+                title: $viewModel.title,
+                value: $viewModel.value,
+                timestamp: $viewModel.timestamp
             )
             .navigationTitle("sheet.editExpense")
             .navigationBarTitleDisplayMode(.large)
@@ -33,19 +37,22 @@ struct EditExpenseSheet: View {
                 }
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Button("toolbar.update") {
-                        expense.title = draftTitle
-                        expense.value = draftValue
-                        expense.timestamp = draftTimestamp
-                        dismiss()
+                        updateExpense()
                     }
                     .foregroundStyle(Color(.yellow))
+                    .disabled(!viewModel.isValid)
                 }
             }
         }
-        .onAppear {
-            draftTitle = expense.title
-            draftValue = expense.value
-            draftTimestamp = expense.timestamp
+    }
+    
+    private func updateExpense() {
+        do {
+            try viewModel.updateExpense(expense, context: context)
+            dismiss()
+        } catch {
+            // Handle error - could show an alert
+            print("Error updating expense: \(error)")
         }
     }
 }

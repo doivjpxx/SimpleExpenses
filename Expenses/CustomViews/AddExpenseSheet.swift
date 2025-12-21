@@ -12,35 +12,41 @@ struct AddExpenseSheet: View {
     @Environment(\.modelContext) var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var title: String = ""
-    @State private var value: Double = 0
-    @State private var timestamp: Date = .now
+    @State private var viewModel = ExpenseFormViewModel()
 
     var body: some View {
         NavigationStack {
-            ExpenseFormView(title: $title, value: $value, timestamp: $timestamp)
-                .navigationTitle("sheet.addExpense")
-                .navigationBarTitleDisplayMode(.large)
-                .toolbar {
-                    ToolbarItemGroup(placement: .topBarLeading) {
-                        Button("toolbar.cancel") {
-                            dismiss()
-                        }
-                    }
-                    ToolbarItemGroup(placement: .topBarTrailing) {
-                        Button("toolbar.save") {
-                            let expense = Expense(
-                                title: title,
-                                value: value,
-                                timestamp: timestamp
-                            )
-                            context.insert(expense)
-                            try! context.save()
-                            dismiss()
-                        }
-                        .foregroundStyle(Color(.blue))
+            ExpenseFormView(
+                title: $viewModel.title,
+                value: $viewModel.value,
+                timestamp: $viewModel.timestamp
+            )
+            .navigationTitle("sheet.addExpense")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItemGroup(placement: .topBarLeading) {
+                    Button("toolbar.cancel") {
+                        dismiss()
                     }
                 }
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button("toolbar.save") {
+                        saveExpense()
+                    }
+                    .foregroundStyle(Color(.blue))
+                    .disabled(!viewModel.isValid)
+                }
+            }
+        }
+    }
+    
+    private func saveExpense() {
+        do {
+            try viewModel.saveNewExpense(context: context)
+            dismiss()
+        } catch {
+            // Handle error - could show an alert
+            print("Error saving expense: \(error)")
         }
     }
 }

@@ -9,13 +9,18 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-
     @Environment(\.modelContext) private var context
-
     @Query(sort: \Expense.timestamp) var expenses: [Expense]
 
-    @State private var isShowingSheet: Bool = false
-    @State private var currentExpense: Expense? = nil
+    @State private var viewModel: ExpenseListViewModel
+
+    init() {
+        // Provide a temporary model context for the State until the real one is assigned in onAppear.
+        let container = (try? ModelContainer(for: Expense.self))
+            ?? (try! ModelContainer(for: Expense.self, configurations: .init(isStoredInMemoryOnly: true)))
+        let tempContext = ModelContext(container)
+        _viewModel = State(initialValue: ExpenseListViewModel(modelContext: tempContext))
+    }
 
     var body: some View {
         NavigationStack {
@@ -23,28 +28,26 @@ struct ContentView: View {
                 ForEach(expenses) { item in
                     ExpenseCellView(expense: item)
                         .onTapGesture {
-                            currentExpense = item
+                            viewModel.selectExpense(item)
                         }
                 }
                 .onDelete { indexSet in
-                    for index in indexSet {
-                        context.delete(expenses[index])
-                    }
+                    viewModel.deleteExpenses(at: indexSet, from: expenses)
                 }
             }
             .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.large)
-            .sheet(isPresented: $isShowingSheet) {
+            .sheet(isPresented: $viewModel.isShowingAddSheet) {
                 AddExpenseSheet()
             }
-            .sheet(item: $currentExpense) { expense in
+            .sheet(item: $viewModel.selectedExpense) { expense in
                 EditExpenseSheet(expense: expense)
             }
             .toolbar {
                 if !expenses.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
                         Button(action: {
-                            isShowingSheet = true
+                            viewModel.showAddSheet()
                         }) {
                             Label("toolbar.addExpense", systemImage: "plus")
                         }
@@ -55,6 +58,10 @@ struct ContentView: View {
                 if expenses.isEmpty {
                     emptyPlaceholder
                 }
+            }
+            .onAppear {
+                // Reinitialize ViewModel with proper context
+                viewModel = ExpenseListViewModel(modelContext: context)
             }
         }
     }
@@ -72,7 +79,7 @@ struct ContentView: View {
             },
             actions: {
                 Button("toolbar.addExpense") {
-                    isShowingSheet = true
+                    viewModel.showAddSheet()
                 }
             }
         )
