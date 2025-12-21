@@ -9,10 +9,14 @@ import Foundation
 import SwiftData
 
 @Model
-final class Item {
+final class Expense {
+    @Attribute(.unique) var title: String
+    var value: Double
     var timestamp: Date
     
-    init(timestamp: Date) {
-        self.timestamp = timestamp
+    init(title: String, value: Double, timestamp: Date?) {
+        self.title = title
+        self.value = value
+        self.timestamp = timestamp ?? Date()
     }
 }
