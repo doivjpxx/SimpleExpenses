@@ -19,32 +19,46 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(expenses) { item in
-                    ExpenseCellView(expense: item)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            selectedExpense = item
+            VStack {
+                if expenses.isEmpty {
+                    emptyPlaceholder
+                } else {
+                    List {
+                        ForEach(expenses) { item in
+                            ExpenseCellView(expense: item)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedExpense = item
+                                }
+                                .swipeActions(
+                                    edge: .trailing,
+                                    allowsFullSwipe: true
+                                ) {
+                                    Button(role: .destructive) {
+                                        deleteExpense(item)
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                                .swipeActions(
+                                    edge: .leading,
+                                    allowsFullSwipe: false
+                                ) {
+                                    Button {
+                                        selectedExpense = item
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    .tint(.blue)
+                                }
+                                .accessibilityElement(children: .combine)
+                                .accessibilityHint(
+                                    "Tap to edit, swipe left to delete"
+                                )
                         }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                            Button(role: .destructive) {
-                                deleteExpense(item)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                            Button {
-                                selectedExpense = item
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            .tint(.blue)
-                        }
-                        .accessibilityElement(children: .combine)
-                        .accessibilityHint("Tap to edit, swipe left to delete")
+                        .onDelete(perform: deleteExpenses)
+                    }
                 }
-                .onDelete(perform: deleteExpenses)
             }
             .navigationTitle("app.title")
             .navigationBarTitleDisplayMode(.large)
@@ -55,7 +69,7 @@ struct ContentView: View {
                 EditExpenseSheet(expense: expense)
             }
             .alert("Error", isPresented: $showingError) {
-                Button("OK", role: .cancel) { }
+                Button("OK", role: .cancel) {}
             } message: {
                 if let errorMessage {
                     Text(errorMessage)
@@ -72,14 +86,9 @@ struct ContentView: View {
                     }
                 }
             }
-            .overlay {
-                if expenses.isEmpty {
-                    emptyPlaceholder
-                }
-            }
         }
     }
-    
+
     var emptyPlaceholder: some View {
         ContentUnavailableView(
             label: {
@@ -99,16 +108,16 @@ struct ContentView: View {
         )
         .offset(y: -60)
     }
-    
+
     // MARK: - Methods
-    
+
     private func deleteExpense(_ expense: Expense) {
         withAnimation {
             context.delete(expense)
             HapticManager.shared.impact(style: .medium)
         }
     }
-    
+
     private func deleteExpenses(at offsets: IndexSet) {
         withAnimation {
             for index in offsets {
