@@ -10,9 +10,12 @@ import SwiftData
 
 @main
 struct ExpensesApp: App {
+    @StateObject private var reminderManager = ReminderManager.shared
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Expense.self,
+            Reminder.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -26,6 +29,10 @@ struct ExpensesApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .task {
+                    // Request notification permission on app launch
+                    _ = await reminderManager.requestNotificationPermission()
+                }
         }
         .modelContainer(sharedModelContainer)
     }
