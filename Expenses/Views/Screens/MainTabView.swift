@@ -15,6 +15,11 @@ struct MainTabView: View {
                     Label("tab.list", systemImage: "list.bullet")
                 }
             
+            ReminderListView()
+                .tabItem {
+                    Label("tab.reminders", systemImage: "bell.fill")
+                }
+            
             ExpenseStatsView()
                 .tabItem {
                     Label("tab.stats", systemImage: "chart.bar")
